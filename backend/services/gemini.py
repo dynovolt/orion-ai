@@ -7,8 +7,10 @@ from google.genai import errors, types
 
 try:
     from backend.schemas.mission import MissionPlan
+    from backend.schemas.report import ExecutiveReport
 except ModuleNotFoundError:
     from schemas.mission import MissionPlan
+    from schemas.report import ExecutiveReport
 
 # Define path to .env file relative to this script
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -79,5 +81,30 @@ class GeminiService:
         raise NotImplementedError("Summarize is not implemented yet.")
 
     @staticmethod
-    def review(*args, **kwargs):
-        raise NotImplementedError("Review is not implemented yet.")
+    def generate_report(mission: str, mission_plan: MissionPlan, knowledge_results: dict, execution_log: dict) -> ExecutiveReport:
+        prompt = (
+            "You are an expert Quality Assurance and Reviewer agent.\n"
+            "Review the original mission, the mission plan, the gathered knowledge results, and the execution log.\n"
+            "Generate a comprehensive Executive Report summarizing the operation, highlighting key findings, summarizing each agent's contribution, assessing risks, providing actionable recommendations and next steps, and grading confidence.\n"
+            "You MUST return ONLY valid JSON matching the required schema. Do not include markdown formatting.\n\n"
+            f"Mission: {mission}\n\n"
+            f"Mission Plan: {mission_plan.model_dump_json()}\n\n"
+            f"Knowledge Results: {json.dumps(knowledge_results)}\n\n"
+            f"Execution Log: {json.dumps(execution_log)}\n"
+        )
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema=ExecutiveReport,
+                )
+            )
+            
+            if hasattr(response, "parsed") and response.parsed is not None:
+                return response.parsed
+            else:
+                return ExecutiveReport.model_validate_json(response.text)
+        except Exception as e:
+            raise RuntimeError(f"Unexpected error in Gemini service report generation: {str(e)}")

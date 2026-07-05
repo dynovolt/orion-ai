@@ -1,7 +1,12 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Any
 from enum import Enum
 from datetime import datetime
+
+try:
+    from backend.schemas.report import ExecutiveReport
+except ModuleNotFoundError:
+    from schemas.report import ExecutiveReport
 
 class TaskStatus(str, Enum):
     PENDING = "pending"
@@ -43,3 +48,4 @@ class MissionResponse(BaseModel):
     status: str = Field(..., description="Initial status of the mission (e.g., 'queued')")
     planner_output: MissionPlan = Field(..., description="Structured mission plan from the Planner agent")
     execution_log: ExecutionLog = Field(..., description="Log of execution events across agents")
+    executive_report: Optional[ExecutiveReport] = Field(None, description="Generated executive report if available")

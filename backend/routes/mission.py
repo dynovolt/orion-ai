@@ -26,7 +26,7 @@ def create_mission(payload: MissionRequest):
         initial_plan = PlannerAgent.execute(payload.mission, document_context)
         
         # Pass to orchestrator for execution
-        updated_plan, execution_log = MissionOrchestrator.orchestrate(initial_plan)
+        updated_plan, execution_log, executive_report = MissionOrchestrator.orchestrate(payload.mission, initial_plan)
         
         # Generate a mission ID
         mission_id = str(uuid4())
@@ -35,7 +35,8 @@ def create_mission(payload: MissionRequest):
             mission_id=mission_id,
             status="completed",
             planner_output=updated_plan,
-            execution_log=execution_log
+            execution_log=execution_log,
+            executive_report=executive_report
         )
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -28,9 +28,22 @@ export interface ExecutionLog {
     events: ExecutionEvent[];
 }
 
+export interface ExecutiveReport {
+    title: string;
+    executive_summary: string;
+    key_findings: string[];
+    agent_contributions: string[];
+    risks: string[];
+    recommendations: string[];
+    next_steps: string[];
+    confidence: number;
+    generated_at: string;
+}
+
 export interface MissionResponse {
     mission_id: string;
     status: string;
     planner_output: MissionPlan;
     execution_log: ExecutionLog;
+    executive_report?: ExecutiveReport;
 }

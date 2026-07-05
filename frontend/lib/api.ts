@@ -38,3 +38,39 @@ export async function launchMission(missionText: string, documentId?: string | n
 
     return await response.json();
 }
+
+export async function downloadReportPdf(report: any): Promise<void> {
+    const response = await fetch(`${API_URL}/report/download`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(report)
+    });
+
+    if (!response.ok) {
+        throw new Error(`Error downloading PDF: ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    
+    const disposition = response.headers.get('content-disposition');
+    let filename = "AIGENTIC_Executive_Report.pdf";
+    if (disposition && disposition.indexOf('attachment') !== -1) {
+        const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        const matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) { 
+            filename = matches[1].replace(/['"]/g, '');
+        }
+    }
+    
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}

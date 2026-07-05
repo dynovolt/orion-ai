@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 try:
     from backend.routes.mission import router as mission_router
     from backend.routes.upload import router as upload_router
+    from backend.routes.report import router as report_router
 except ModuleNotFoundError:
     from routes.mission import router as mission_router
     from routes.upload import router as upload_router
+    from routes.report import router as report_router
 
 app = FastAPI(
     title="OrionOS API",
@@ -22,6 +24,7 @@ app.add_middleware(
 
 app.include_router(mission_router)
 app.include_router(upload_router)
+app.include_router(report_router)
 
 @app.get("/")
 def root():

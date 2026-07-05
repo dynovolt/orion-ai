@@ -2,18 +2,16 @@
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { launchMission as apiLaunchMission } from "../lib/api";
-import { MissionPlan, ExecutionLog, ExecutionEvent } from "../types/mission";
+import { MissionPlan, ExecutionLog, ExecutionEvent, ExecutiveReport } from "../types/mission";
 
 type AgentState = "Ready" | "Running" | "Completed";
 
 interface MissionContextProps {
   loading: boolean;
   missionStatus: string;
-  missionPlan: MissionPlan | null;
-  executionLog: ExecutionLog | null;
-  agentStates: Record<string, AgentState>;
   documentId: string | null;
   setDocumentId: (id: string | null) => void;
+  missionReport: ExecutiveReport | null;
   launchMission: (text: string) => Promise<void>;
 }
 
@@ -25,6 +23,7 @@ export const MissionProvider = ({ children }: { children: ReactNode }) => {
   const [missionPlan, setMissionPlan] = useState<MissionPlan | null>(null);
   const [executionLog, setExecutionLog] = useState<ExecutionLog | null>(null);
   const [documentId, setDocumentId] = useState<string | null>(null);
+  const [missionReport, setMissionReport] = useState<ExecutiveReport | null>(null);
   const [agentStates, setAgentStates] = useState<Record<string, AgentState>>({
     Planner: "Ready",
     Research: "Ready",
@@ -39,12 +38,14 @@ export const MissionProvider = ({ children }: { children: ReactNode }) => {
     setMissionStatus("Planning");
     setMissionPlan(null);
     setExecutionLog(null);
+    setMissionReport(null);
     setAgentStates({ Planner: "Running", Research: "Ready", Knowledge: "Ready", Reviewer: "Ready" });
 
     try {
       const response = await apiLaunchMission(text, documentId);
       
       setMissionPlan(response.planner_output);
+      setMissionReport(response.executive_report || null);
       setAgentStates(prev => ({ ...prev, Planner: "Completed" }));
       setMissionStatus("Executing");
 
@@ -77,7 +78,7 @@ export const MissionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MissionContext.Provider value={{ loading, missionStatus, missionPlan, executionLog, agentStates, documentId, setDocumentId, launchMission }}>
+    <MissionContext.Provider value={{ loading, missionStatus, missionPlan, executionLog, agentStates, documentId, setDocumentId, missionReport, launchMission }}>
       {children}
     </MissionContext.Provider>
   );

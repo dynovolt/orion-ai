@@ -1,13 +1,15 @@
 from datetime import datetime, timezone
-from typing import Tuple
+from typing import Tuple, Optional
 
 try:
     from backend.schemas.mission import MissionPlan, ExecutionLog, ExecutionEvent, TaskStatus
+    from backend.schemas.report import ExecutiveReport
     from backend.agents.research import ResearchAgent
     from backend.agents.knowledge import KnowledgeAgent
     from backend.agents.reviewer import ReviewerAgent
 except ModuleNotFoundError:
     from schemas.mission import MissionPlan, ExecutionLog, ExecutionEvent, TaskStatus
+    from schemas.report import ExecutiveReport
     from agents.research import ResearchAgent
     from agents.knowledge import KnowledgeAgent
     from agents.reviewer import ReviewerAgent
@@ -20,11 +22,14 @@ AGENTS = {
 
 class MissionOrchestrator:
     @staticmethod
-    def orchestrate(mission_plan: MissionPlan) -> Tuple[MissionPlan, ExecutionLog]:
+    def orchestrate(mission: str, mission_plan: MissionPlan) -> Tuple[MissionPlan, ExecutionLog, Optional[ExecutiveReport]]:
         log = ExecutionLog(events=[])
+        executive_report = None
         
         # Build a lookup for tasks by their ID
         tasks_by_id = {task.id: task for task in mission_plan.tasks}
+        
+        knowledge_results = {}
 
         for task_id in mission_plan.execution_order:
             if task_id not in tasks_by_id:
@@ -44,8 +49,18 @@ class MissionOrchestrator:
 
             agent = AGENTS.get(assigned_agent_name)
             if agent:
-                # Dispatch to correct agent
-                agent.execute(task)
+                if assigned_agent_name == "Reviewer":
+                    # Build context for reviewer
+                    context = {
+                        "mission": mission,
+                        "mission_plan": mission_plan,
+                        "knowledge_results": knowledge_results,
+                        "execution_log": [e.model_dump() for e in log.events]
+                    }
+                    executive_report = agent.execute(task, context=context)
+                else:
+                    # Other agents (placeholder execution)
+                    agent.execute(task)
             else:
                 task.status = TaskStatus.FAILED
 
@@ -58,4 +73,4 @@ class MissionOrchestrator:
                 event=final_event
             ))
 
-        return mission_plan, log
+        return mission_plan, log, executive_report
