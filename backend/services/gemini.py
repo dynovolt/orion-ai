@@ -12,22 +12,18 @@ except ModuleNotFoundError:
     from schemas.mission import MissionPlan
     from schemas.report import ExecutiveReport
 
-# Define path to .env file relative to this script
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV_PATH = os.path.join(CURRENT_DIR, "..", ".env")
+from dotenv import load_dotenv
 
-# Read from .env strictly (do not fall back to system env variables)
-env_vars = dotenv_values(ENV_PATH)
-api_key = env_vars.get("GEMINI_API_KEY")
-model_name = env_vars.get("MODEL_NAME")
+# Load .env locally (does nothing on Render if no .env exists)
+load_dotenv()
+
+# Read environment variables
+api_key = os.getenv("GEMINI_API_KEY")
+model_name = os.getenv("MODEL_NAME", "gemini-2.5-pro")
 
 if not api_key:
-    raise ValueError("GEMINI_API_KEY is missing from .env")
+    raise ValueError("GEMINI_API_KEY environment variable is missing")
 
-if not model_name:
-    raise ValueError("MODEL_NAME is missing from .env")
-
-# Initialize client once
 client = genai.Client(api_key=api_key)
 
 class GeminiService:
