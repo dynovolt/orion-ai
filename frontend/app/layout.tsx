@@ -28,7 +28,8 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col dark bg-background text-foreground">
+      <body className="min-h-full flex flex-col dark bg-background text-foreground relative selection:bg-primary/30 selection:text-primary-foreground">
+        <div className="fixed inset-0 z-[-1] pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/[0.04] via-background to-background"></div>
         <MissionProvider>
           {children}
         </MissionProvider>
