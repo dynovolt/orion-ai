@@ -90,39 +90,127 @@
   --card-foreground: #fafafa;
   --popover: #111113;
   --popover-foreground: #fafafa;
-  --primary: #4f46e5; /* Indigo */
+  --primary: #5b5cf6;
   --primary-foreground: #ffffff;
   --secondary: #18181b;
   --secondary-foreground: #fafafa;
   --muted: #18181b;
-  --muted-foreground: #71717a; /* zinc-500 */
-  --accent: #4f46e5;
+  --muted-foreground: #71717a;
+  --accent: #5b5cf6;
   --accent-foreground: #ffffff;
   --destructive: #ef4444;
-  --success: #10b981; /* Emerald green */
-  --border: rgba(255, 255, 255, 0.08);
-  --input: rgba(255, 255, 255, 0.08);
-  --ring: #4f46e5;
+  --success: #22c55e;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: #5b5cf6;
 }
 
+/* --- Utility classes --- */
 @layer utilities {
   .glass-panel {
-    @apply bg-[#111113]/90 backdrop-blur-md border border-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.03)];
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
   }
+
   .glass-card {
-    @apply bg-[#18181b]/80 backdrop-blur-sm border border-white/[0.08] hover:bg-[#18181b]/95 hover:border-white/[0.15] transition-all duration-300 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.02)];
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 200ms ease;
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.07) 50%,
+      rgba(255, 255, 255, 0.03) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
+    border-radius: 8px;
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 20px rgba(91, 92, 246, 0.25);
+  }
+
+  .glow-success {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+
+  .glow-danger {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
   }
 }
 
+/* --- Custom scrollbar --- */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* --- Keyframes --- */
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.25s ease forwards;
+}
+
+.animate-fade {
+  animation: fade-in 0.2s ease forwards;
+}
+
+.animate-dot-pulse {
+  animation: dot-pulse 1.5s ease-in-out infinite;
+}
+
+/* --- Base --- */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-zinc-300;
+    @apply bg-background text-[#a1a1aa];
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply text-zinc-50 font-semibold;
+    @apply text-[#fafafa] font-semibold;
   }
   html {
     @apply font-sans;

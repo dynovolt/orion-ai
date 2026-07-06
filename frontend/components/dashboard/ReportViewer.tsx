@@ -1,248 +1,293 @@
 "use client";
 
-import { useState } from "react";
-import { FileSearch, Download, Loader2, CheckCircle2, AlertTriangle, Cpu, HelpCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMission } from "@/context/MissionContext";
 import { downloadReportPdf } from "@/lib/api";
-import { Button } from "@/components/ui/button";
+import {
+  FileText, Download, Loader2, BarChart2, AlertTriangle,
+  CheckCircle2, ChevronRight, Lightbulb, TrendingUp, Activity
+} from "lucide-react";
 
-export function ReportViewer() {
-  const { missionPlan, missionReport } = useMission();
-  const [downloading, setDownloading] = useState(false);
-
-  const handleDownload = async () => {
-    if (!missionReport) return;
-    try {
-      setDownloading(true);
-      await downloadReportPdf(missionReport);
-    } catch (error) {
-      console.error("Failed to download report", error);
-    } finally {
-      setDownloading(false);
-    }
-  };
-
-  // Before Mission: Show Onboarding
-  if (!missionPlan && !missionReport) {
-    return (
-      <div className="bg-white/[0.02] backdrop-blur-[20px] border border-white/[0.05] p-8 rounded-[18px] h-full flex flex-col relative overflow-hidden shadow-lg">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#5B5CF6]/20 to-transparent"></div>
-        
-        <div className="flex items-center gap-3 mb-8 pb-4 border-b border-white/[0.05] shrink-0">
-          <div className="p-2 bg-[#5B5CF6]/10 rounded-xl border border-[#5B5CF6]/20">
-             <HelpCircle className="size-4 text-[#5B5CF6]" />
-          </div>
-          <h2 className="text-sm font-bold tracking-tight text-[#FAFAFA]">How Orion Works</h2>
-        </div>
-        
-        <div className="flex-1 flex flex-col justify-center gap-5 py-2 px-1">
-          <div className="text-center mb-2">
-            <h3 className="text-sm font-bold text-[#FAFAFA]">Orchestrate Your Workflow</h3>
-            <p className="text-xs text-[#71717A] mt-1 leading-relaxed">Connect and deploy specialized AI agents to generate executive insights</p>
-          </div>
-          
-          <div className="space-y-3.5">
-            <div className="flex items-center gap-4 bg-black/20 border border-white/[0.04] p-3.5 rounded-xl hover:border-white/[0.08] transition-all">
-              <div className="flex items-center justify-center size-8 rounded-lg bg-[#111113] text-[#71717A] font-mono text-xs font-bold border border-white/5 shrink-0">01</div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-[#FAFAFA]">Upload Context File</span>
-                <span className="text-[10px] text-[#71717A] mt-0.5 font-medium">Attach PDF assets to construct dynamic knowledge bases</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 bg-black/20 border border-white/[0.04] p-3.5 rounded-xl hover:border-white/[0.08] transition-all">
-              <div className="flex items-center justify-center size-8 rounded-lg bg-[#111113] text-[#71717A] font-mono text-xs font-bold border border-white/5 shrink-0">02</div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-[#FAFAFA]">Set Objectives</span>
-                <span className="text-[10px] text-[#71717A] mt-0.5 font-medium">Describe your research requirements and guidelines</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 bg-black/20 border border-white/[0.04] p-3.5 rounded-xl hover:border-white/[0.08] transition-all">
-              <div className="flex items-center justify-center size-8 rounded-lg bg-[#111113] text-[#71717A] font-mono text-xs font-bold border border-white/5 shrink-0">03</div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-[#FAFAFA]">Launch Agents</span>
-                <span className="text-[10px] text-[#71717A] mt-0.5 font-medium">Watch Planner, Research, and Reviewer run in series</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4 bg-[#5B5CF6]/5 border border-[#5B5CF6]/10 p-3.5 rounded-xl hover:border-[#5B5CF6]/20 transition-all">
-              <div className="flex items-center justify-center size-8 rounded-lg bg-[#5B5CF6]/10 text-[#5B5CF6] font-mono text-xs font-bold border border-[#5B5CF6]/20 shadow-[0_0_8px_rgba(91,92,246,0.15)] shrink-0">04</div>
-              <div className="flex flex-col">
-                <span className="text-xs font-bold text-[#5B5CF6]">Generate Analytics</span>
-                <span className="text-[10px] text-[#5B5CF6]/50 mt-0.5 font-semibold">Examine structural deliverables and download as PDF</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // After Mission: Show Report
-  if (missionReport) {
-    const confidencePercent = missionReport.confidence * 100;
-    let confidenceLabel = "High Confidence";
-    if (confidencePercent >= 95) confidenceLabel = "Very High Confidence";
-    else if (confidencePercent >= 80) confidenceLabel = "High Confidence";
-    else if (confidencePercent >= 60) confidenceLabel = "Moderate Confidence";
-    else confidenceLabel = "Low Confidence";
-
-    return (
-      <div className="bg-white/[0.02] backdrop-blur-[20px] border border-white/[0.05] p-8 rounded-[18px] h-full flex flex-col relative overflow-hidden shadow-lg">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#5B5CF6]/50 to-transparent"></div>
-        
-        <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/[0.05] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-              <CheckCircle2 className="size-4 text-emerald-400" />
-            </div>
-            <h2 className="text-sm font-bold tracking-tight text-[#FAFAFA]">Executive Report</h2>
-          </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleDownload} 
-            disabled={downloading}
-            className="h-9 px-4 gap-2 bg-[#18181B] border-white/[0.05] hover:bg-[#111113] text-[#A1A1AA] hover:text-[#FAFAFA] hover:border-white/[0.12] rounded-xl transition-all shadow-sm font-semibold text-xs active:scale-[0.98]"
-          >
-            {downloading ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
-            {downloading ? "Generating..." : "Download PDF"}
-          </Button>
-        </div>
-        
-        <div className="flex-1 flex flex-col space-y-6 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-          <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-            <h3 className="text-base font-bold tracking-tight text-[#FAFAFA] mb-2 leading-tight">{missionReport.title}</h3>
-            <p className="text-[9px] text-[#71717A] font-bold tracking-widest uppercase">Generated {new Date(missionReport.generated_at).toLocaleString()}</p>
-          </div>
-
-          <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-            <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-3">Executive Summary</h3>
-            <p className="text-sm font-medium leading-relaxed text-[#A1A1AA]">{missionReport.executive_summary}</p>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-[#111113]/40 border border-white/[0.05] p-5 rounded-xl flex flex-col items-center justify-center relative overflow-hidden group">
-               <div className="absolute inset-0 bg-gradient-to-b from-[#5B5CF6]/5 to-transparent"></div>
-               <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-1.5 relative z-10">Confidence</h3>
-               <p className="text-3xl font-light tracking-tighter text-[#5B5CF6] relative z-10">
-                 {confidencePercent.toFixed(1)}<span className="text-lg text-[#5B5CF6]/50 ml-0.5">%</span>
-               </p>
-               <span className="text-[10px] text-[#5B5CF6] font-bold uppercase tracking-widest mt-1 relative z-10">{confidenceLabel}</span>
-            </div>
-            
-            <div className="bg-[#111113]/40 border border-white/[0.05] p-4 rounded-xl flex flex-col justify-between">
-               <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-3">Contributions</h3>
-               <div className="space-y-2 overflow-y-auto max-h-24 pr-1">
-                 {missionReport.agent_contributions.map((c, i) => (
-                   <div key={i} className="bg-white/[0.02] border border-white/[0.04] px-2.5 py-1.5 rounded-lg text-[10px] text-[#A1A1AA] font-medium leading-normal">
-                     {c}
-                   </div>
-                 ))}
-               </div>
-            </div>
-          </div>
-
-          <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-            <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-4">Key Findings</h3>
-            <ul className="space-y-3">
-              {missionReport.key_findings.map((finding, idx) => (
-                <li key={idx} className="bg-white/[0.01] border border-white/[0.04] p-4 rounded-xl text-xs flex items-start gap-3 hover:border-white/[0.08] hover:bg-white/[0.02] transition-all">
-                  <span className="text-[#5B5CF6] font-bold text-xs shrink-0">0{idx + 1}.</span>
-                  <span className="leading-relaxed text-[#A1A1AA]">{finding}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-            <h3 className="text-[10px] text-emerald-500/70 uppercase tracking-widest font-bold mb-4">Recommendations</h3>
-            <ul className="space-y-3">
-              {missionReport.recommendations.map((rec, idx) => (
-                <li key={idx} className="bg-emerald-500/[0.02] border border-emerald-500/10 p-4 rounded-xl text-xs flex items-start gap-3 hover:border-emerald-500/20 hover:bg-emerald-500/[0.04] transition-all">
-                  <span className="text-emerald-400 font-bold text-xs shrink-0">0{idx + 1}.</span>
-                  <span className="leading-relaxed text-[#A1A1AA]">{rec}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          
-          {missionReport.risks.length > 0 && (
-            <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-              <h3 className="text-[10px] text-[#EF4444]/70 uppercase tracking-widest font-bold mb-4">Business Risks</h3>
-              <ul className="space-y-3">
-                {missionReport.risks.map((risk, idx) => (
-                  <li key={idx} className="bg-red-500/[0.02] border border-red-500/10 p-4 rounded-xl text-xs flex items-start gap-3 hover:border-red-500/20 hover:bg-red-500/[0.04] transition-all">
-                     <span className="text-red-400 font-bold text-xs shrink-0">0{idx + 1}.</span>
-                     <span className="leading-relaxed text-[#A1A1AA]">{risk}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-            <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-4">Next Steps</h3>
-            <ul className="space-y-3">
-              {missionReport.next_steps.map((step, idx) => (
-                 <li key={idx} className="bg-white/[0.01] border border-white/[0.04] p-4 rounded-xl text-xs flex items-start gap-3 hover:border-white/[0.08] hover:bg-white/[0.02] transition-all">
-                   <span className="text-[10px] font-mono text-[#71717A] mt-0.5 shrink-0">{(idx + 1).toString().padStart(2, '0')}</span>
-                   <span className="font-semibold leading-relaxed text-[#A1A1AA]">{step}</span>
-                 </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Fallback to MissionPlan (during execution / blueprint phase)
+/* ─── Section card ─── */
+function ReportSection({
+  icon: Icon,
+  title,
+  items,
+  colorClass,
+  borderClass,
+  delay = 0,
+}: {
+  icon: React.ElementType;
+  title: string;
+  items: string[];
+  colorClass: string;
+  borderClass: string;
+  delay?: number;
+}) {
+  if (!items || items.length === 0) return null;
   return (
-    <div className="bg-white/[0.02] backdrop-blur-[20px] border border-white/[0.05] p-8 rounded-[18px] h-full flex flex-col relative overflow-hidden shadow-lg">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-[#5B5CF6]/20 to-transparent"></div>
-      
-      <div className="flex items-center gap-3 mb-8 pb-6 border-b border-white/5 shrink-0">
-        <div className="p-2 bg-[#5B5CF6]/10 rounded-xl border border-[#5B5CF6]/20 shadow-[0_0_8px_rgba(91,92,246,0.15)]">
-           <FileSearch className="size-4 text-[#5B5CF6]" />
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.21, 0.47, 0.32, 0.98], delay }}
+      className={`bg-black/20 border ${borderClass} rounded-xl p-5`}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <div className={`p-1.5 rounded-lg ${colorClass}`}>
+          <Icon className="size-3.5" />
         </div>
-        <h2 className="text-sm font-bold tracking-tight text-[#FAFAFA]">Mission Blueprint</h2>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-[#A1A1AA]">{title}</h3>
       </div>
-      <div className="flex-1 flex flex-col space-y-6 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-        <div className="bg-black/20 border border-white/[0.04] p-5 rounded-xl">
-          <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-3">Objective</h3>
-          <p className="text-sm font-medium leading-relaxed text-[#A1A1AA]">{missionPlan.objective}</p>
+      <ul className="space-y-2.5">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-2.5">
+            <ChevronRight className="size-3 text-[#71717A] mt-0.5 shrink-0" />
+            <span className="text-xs text-[#A1A1AA] leading-relaxed">{item}</span>
+          </li>
+        ))}
+      </ul>
+    </motion.div>
+  );
+}
+
+/* ─── Skeleton block ─── */
+function SkeletonBlock({ w = "full", h = 4 }: { w?: string; h?: number }) {
+  return <div className={`skeleton w-${w} h-${h} rounded-lg`} />;
+}
+
+/* ─── Loading state ─── */
+function ReportLoading({ missionStatus }: { missionStatus: string }) {
+  const msgs: Record<string, string> = {
+    Planning:  "Planner Building Execution Graph...",
+    Executing: "Agents Executing — One by One...",
+    Completed: "Finalizing Executive Report...",
+  };
+  return (
+    <div className="flex flex-col h-full p-6 gap-6">
+      {/* animated header */}
+      <div className="flex items-center gap-3 pb-4 border-b border-white/[0.05]">
+        <div className="p-2 bg-[#5B5CF6]/10 rounded-xl border border-[#5B5CF6]/20">
+          <Loader2 className="size-4 text-[#5B5CF6] animate-spin" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-black/20 border border-white/[0.04] p-4 rounded-xl">
-            <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-2">Priority</h3>
-            <p className="text-sm font-bold text-[#5B5CF6]">{missionPlan.priority}</p>
-          </div>
-          <div className="bg-black/20 border border-white/[0.04] p-4 rounded-xl">
-            <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-2">Est. Time</h3>
-            <p className="text-sm font-bold text-[#FAFAFA]">{missionPlan.estimated_time}</p>
-          </div>
+        <div>
+          <h2 className="text-sm font-bold text-[#FAFAFA]">Generating Report</h2>
+          <motion.p
+            key={missionStatus}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-[11px] text-[#71717A] mt-0.5"
+          >
+            {msgs[missionStatus] || "Processing..."}
+          </motion.p>
         </div>
-        
-        <div className="space-y-4">
-          <h3 className="text-[10px] text-[#71717A] uppercase tracking-widest font-bold mb-2 px-1">Task Breakdown</h3>
-          <div className="space-y-4">
-            {missionPlan.tasks.map((task) => (
-              <div key={task.id} className="bg-white/[0.01] border border-white/[0.04] p-5 rounded-xl hover:border-white/[0.08] hover:bg-white/[0.02] transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold text-[#5B5CF6] tracking-wide">Task {task.id}</span>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-[#A1A1AA] bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
-                    {task.assigned_agent}
-                  </span>
-                </div>
-                <h4 className="text-sm font-bold text-[#FAFAFA] mb-2">{task.title}</h4>
-                <p className="text-xs text-[#A1A1AA] leading-relaxed">{task.description}</p>
+      </div>
+
+      {/* Skeleton blocks */}
+      <div className="space-y-3">
+        <SkeletonBlock h={3} w="3/4" />
+        <SkeletonBlock h={3} />
+        <SkeletonBlock h={3} w="5/6" />
+        <SkeletonBlock h={3} w="2/3" />
+      </div>
+      <div className="space-y-2">
+        <SkeletonBlock h={2} w="1/3" />
+        <SkeletonBlock h={2} w="full" />
+        <SkeletonBlock h={2} w="4/5" />
+        <SkeletonBlock h={2} w="full" />
+        <SkeletonBlock h={2} w="3/4" />
+      </div>
+      <div className="space-y-2">
+        <SkeletonBlock h={2} w="1/4" />
+        <SkeletonBlock h={2} w="5/6" />
+        <SkeletonBlock h={2} w="2/3" />
+      </div>
+
+      {/* pulse message */}
+      <motion.div
+        animate={{ opacity: [0.4, 1, 0.4] }}
+        transition={{ duration: 2, repeat: Infinity }}
+        className="mt-auto flex items-center gap-2 text-[11px] text-[#5B5CF6] font-semibold"
+      >
+        <span className="size-1.5 rounded-full bg-[#5B5CF6] shadow-[0_0_6px_rgba(91,92,246,0.6)]" />
+        Agents executing sequentially...
+      </motion.div>
+    </div>
+  );
+}
+
+/* ─── Onboarding (idle) ─── */
+function ReportIdle() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center justify-center h-full text-center px-8 gap-6"
+    >
+      <div className="size-14 rounded-2xl bg-[#5B5CF6]/10 border border-[#5B5CF6]/20 flex items-center justify-center shadow-[0_0_24px_rgba(91,92,246,0.15)]">
+        <FileText className="size-7 text-[#5B5CF6]" />
+      </div>
+      <div>
+        <h3 className="text-base font-bold text-[#FAFAFA] tracking-tight">Executive Report</h3>
+        <p className="text-xs text-[#71717A] mt-2 leading-relaxed max-w-[220px]">
+          Launch a mission and OrionOS will generate a structured intelligence report.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2 w-full max-w-[200px]">
+        {["Executive Summary", "Key Findings", "Business Risks", "Recommendations"].map((item, i) => (
+          <motion.div
+            key={item}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.15 + i * 0.06 }}
+            className="flex items-center gap-2 text-[10px] text-[#71717A] bg-white/[0.02] border border-white/[0.05] rounded-lg px-3 py-2"
+          >
+            <div className="size-1.5 rounded-full bg-[#5B5CF6]/50" />
+            {item}
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Main ─── */
+export function ReportViewer() {
+  const { missionReport, missionStatus, loading } = useMission();
+
+  // showReport gates on missionReport presence only — context now sets the report
+  // while loading is still true, so we can't use loading as the gate here.
+  const showReport   = !!missionReport;
+  const showSkeleton = !showReport && (loading || missionStatus === "Planning" || missionStatus === "Executing");
+  const showIdle     = !showSkeleton && !showReport;
+
+  return (
+    <div className="glass-panel rounded-[18px] h-full flex flex-col overflow-hidden">
+      <AnimatePresence mode="wait">
+        {showIdle && (
+          <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1">
+            <ReportIdle />
+          </motion.div>
+        )}
+
+        {showSkeleton && (
+          <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex-1 overflow-y-auto">
+            <ReportLoading missionStatus={missionStatus} />
+          </motion.div>
+        )}
+
+        {showReport && missionReport && (
+          <motion.div
+            key="report"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.21, 0.47, 0.32, 0.98] }}
+            className="flex-1 overflow-y-auto p-6 flex flex-col gap-5"
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between pb-4 border-b border-white/[0.05] gap-4">
+              <div>
+                <h2 className="text-sm font-bold text-[#FAFAFA] leading-tight">{missionReport.title}</h2>
+                <p className="text-[10px] text-[#71717A] mt-1 font-mono">
+                  {new Date(missionReport.generated_at).toLocaleString()} · by OrionOS
+                </p>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
+              <motion.button
+                whileHover={{ scale: 1.04, y: -1 }}
+                whileTap={{ scale: 0.96 }}
+                onClick={() => downloadReportPdf(missionReport)}
+                className="flex items-center gap-2 px-4 py-2 bg-[#5B5CF6]/10 border border-[#5B5CF6]/20 rounded-xl text-[#5B5CF6] text-[10px] font-bold uppercase tracking-widest hover:bg-[#5B5CF6]/15 hover:border-[#5B5CF6]/30 transition-all duration-200 shrink-0"
+              >
+                <Download className="size-3.5" />
+                PDF
+              </motion.button>
+            </div>
+
+            {/* Confidence metric */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="flex items-center justify-between bg-[#22C55E]/[0.04] border border-[#22C55E]/15 rounded-xl px-5 py-4"
+            >
+              <div className="flex items-center gap-2 text-[11px] text-[#71717A] font-bold uppercase tracking-widest">
+                <Activity className="size-3.5 text-[#22C55E]" />
+                Confidence Score
+              </div>
+              <span className="text-2xl font-black text-[#22C55E] font-mono tabular-nums">
+                {missionReport.confidence}%
+              </span>
+            </motion.div>
+
+            {/* Executive summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="bg-black/20 border border-white/[0.05] rounded-xl p-5"
+            >
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#71717A] mb-3">Executive Summary</h3>
+              <p className="text-xs text-[#A1A1AA] leading-relaxed">{missionReport.executive_summary}</p>
+            </motion.div>
+
+            <ReportSection
+              icon={TrendingUp}
+              title="Key Findings"
+              items={missionReport.key_findings}
+              colorClass="bg-[#5B5CF6]/10 text-[#5B5CF6]"
+              borderClass="border-[#5B5CF6]/[0.08]"
+              delay={0.2}
+            />
+            <ReportSection
+              icon={AlertTriangle}
+              title="Business Risks"
+              items={missionReport.risks}
+              colorClass="bg-[#F59E0B]/10 text-[#F59E0B]"
+              borderClass="border-[#F59E0B]/[0.08]"
+              delay={0.25}
+            />
+            <ReportSection
+              icon={Lightbulb}
+              title="Recommendations"
+              items={missionReport.recommendations}
+              colorClass="bg-[#22C55E]/10 text-[#22C55E]"
+              borderClass="border-[#22C55E]/[0.08]"
+              delay={0.3}
+            />
+            <ReportSection
+              icon={CheckCircle2}
+              title="Next Steps"
+              items={missionReport.next_steps}
+              colorClass="bg-[#A1A1AA]/10 text-[#A1A1AA]"
+              borderClass="border-white/[0.05]"
+              delay={0.35}
+            />
+
+            {/* Agent contributions */}
+            {missionReport.agent_contributions?.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-black/20 border border-white/[0.05] rounded-xl p-5"
+              >
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-[#71717A] mb-3 flex items-center gap-2">
+                  <BarChart2 className="size-3.5" /> Agent Contributions
+                </h3>
+                <div className="space-y-2">
+                  {missionReport.agent_contributions.map((item, i) => (
+                    <div key={i} className="text-xs text-[#A1A1AA] flex items-start gap-2">
+                      <span className="text-[#5B5CF6] font-mono mt-0.5 shrink-0">→</span>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
