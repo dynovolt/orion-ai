@@ -14,6 +14,12 @@ class TaskStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
+class AgentName(str, Enum):
+    PLANNER = "Planner"
+    RESEARCH = "Research"
+    KNOWLEDGE = "Knowledge"
+    REVIEWER = "Reviewer"
+
 class MissionRequest(BaseModel):
     mission: str = Field(..., description="The user's mission instructions")
     files: Optional[List[str]] = Field(None, description="Optional list of asset paths or identifiers")
@@ -21,9 +27,9 @@ class MissionRequest(BaseModel):
 
 class Task(BaseModel):
     id: str = Field(..., description="Unique identifier for the task")
-    title: str = Field(..., description="Short title of the task")
-    description: str = Field(..., description="Detailed description of what needs to be done")
-    assigned_agent: str = Field(..., description="The recommended agent for this task")
+    title: str = Field(..., description="Title of the task")
+    description: str = Field(..., description="Detailed description of the task")
+    assigned_agent: AgentName = Field(..., description="Agent assigned to complete the task")
     priority: str = Field(..., description="Priority of the task (e.g., high, medium, low)")
     status: TaskStatus = Field(TaskStatus.PENDING, description="Current status of the task")
 

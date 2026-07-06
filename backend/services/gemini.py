@@ -37,7 +37,13 @@ class GeminiService:
             "You are an expert project manager.\n"
             "Break the following mission into a structured plan.\n"
             "Include an overall objective, priority, estimated time, and subtasks.\n"
-            "Assign a recommended agent for each task.\n"
+            "You MUST assign every task to ONLY one of these four agents:\n"
+            "Planner\n"
+            "Research\n"
+            "Knowledge\n"
+            "Reviewer\n"
+            "Do NOT invent any other agent names.\n"
+            "Do NOT use titles such as: Business Analyst, Project Manager, Financial Analyst, Strategy Consultant, Market Researcher, Data Analyst, Research Specialist, or any other custom role.\n"
             "Determine the execution_order by listing the IDs of the tasks in the order they should be executed.\n"
             "You MUST return ONLY valid JSON matching the required schema. Do not include markdown formatting.\n\n"
         )
@@ -89,8 +95,8 @@ class GeminiService:
             "You MUST return ONLY valid JSON matching the required schema. Do not include markdown formatting.\n\n"
             f"Mission: {mission}\n\n"
             f"Mission Plan: {mission_plan.model_dump_json()}\n\n"
-            f"Knowledge Results: {json.dumps(knowledge_results)}\n\n"
-            f"Execution Log: {json.dumps(execution_log)}\n"
+            f"Knowledge Results: {json.dumps(knowledge_results, default=str)}\n\n"
+            f"Execution Log: {json.dumps(execution_log, default=str)}\n"
         )
         try:
             response = client.models.generate_content(
